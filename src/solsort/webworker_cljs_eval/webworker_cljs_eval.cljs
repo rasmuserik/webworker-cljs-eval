@@ -21,7 +21,7 @@
     "pong" (db! [:workers (aget message "src") :pong] (js/Date.now))))
 (defonce workers (atom {}))
 (defn new-worker []
-  (let [worker (js/Worker. (js/URL.createObjectURL (js/Blob. #js["onmessage=function(e){eval(e.data)}"], #js{:type "application/javascript"})))
+  (let [worker (js/Worker. (js/URL.createObjectURL (js/Blob. #js ["onmessage=function(e){eval(e.data)}"], #js {:type "application/javascript"})))
         id (str (random-uuid))]
     (.postMessage worker (str "ID=" (js/JSON.stringify id)))
     (.postMessage worker "console.log('new worker:', ID)")
@@ -31,8 +31,7 @@
               (aset o "src" id)
               (message-handler o))))
     (swap! workers assoc id worker)
-    (db! [:workers id] {:id id :running true})
-    ))
+    (db! [:workers id] {:id id :running true})))
 
 (defn kill-worker [id]
   (.terminate (get @workers id))
@@ -48,13 +47,12 @@
 (defonce compiler-state (cljs.js/empty-state))
 (defn <compile []
   (let [c (chan)]
-   (cljs.js/compile-str
-    compiler-state (db [:code])
-    (fn [result]
-      (db! [:compiled-code] (str (:value result)))
-      (close! c)
-      ))
-   c))
+    (cljs.js/compile-str
+     compiler-state (db [:code])
+     (fn [result]
+       (db! [:compiled-code] (str (:value result)))
+       (close! c)))
+    c))
 
 (defn ping [id]
   (db! [:workers id :ping] (js/Date.now))
@@ -78,9 +76,7 @@
                 (<! (<compile))
                 (.postMessage
                  (get @workers id)
-                 (db [:compiled-code])
-                 )
-                                  )} "run code in worker"]
+                 (db [:compiled-code])))} "run code in worker"]
            [:div "Ping:" (- (:pong worker) (:ping worker))]])))
 (defn app []
   [:div  [input {:db [:code]
@@ -93,12 +89,10 @@
    [:div {:style {:display :inline-block
                   :position :absolute
                   :width "50%"
-                  :right 0
-                  }}
+                  :right 0}}
     [:button {:on-click <compile} "compile"]
     [:button {:on-click new-worker} "new worker"]
     [worker-list]
     [:h3 "compiled-code"]
-    [:pre (db [:compiled-code])]
-    ]])
+    [:pre (db [:compiled-code])]]])
 (render [app])
