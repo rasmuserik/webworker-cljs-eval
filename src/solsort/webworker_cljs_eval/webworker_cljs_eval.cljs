@@ -21,10 +21,20 @@
     "pong" (db! [:workers (aget message "src") :pong] (js/Date.now))))
 (defonce workers (atom {}))
 (defn new-worker []
-  (let [worker (js/Worker. (js/URL.createObjectURL (js/Blob. #js ["onmessage=function(e){eval(e.data)}"], #js {:type "application/javascript"})))
+  (let [worker (js/Worker.
+                (js/URL.createObjectURL
+                 (js/Blob. #js ["onmessage=function(e){eval(e.data)}"]
+                           #js {:type "application/javascript"})))
         id (str (random-uuid))]
     (.postMessage worker (str "ID=" (js/JSON.stringify id)))
     (.postMessage worker "console.log('new worker:', ID)")
+    (.postMessage worker "
+CLOSURE_IMPORT_SCRIPT = function(name) {
+   importScripts('http://localhost:3449/out/goog/' + name);
+};
+importScripts('http://localhost:3449/out/goog/base.js');
+importScripts('http://localhost:3449/out/cljs_deps.js');
+")
     (aset worker "onmessage"
           (fn [e]
             (let [o (aget e "data")]
@@ -40,18 +50,22 @@
 (new-worker)
 (random-uuid)
 (when-not (db [:code])
-  (db! [:code] "(ns hello)
+  (db! [:code] "(ns hello
+;(:require [cljs.reader])
+)
      (js/console.log \"here\")
      (js/console.log \"here2\") "))
 
 (defonce compiler-state (cljs.js/empty-state))
 (defn <compile []
   (let [c (chan)]
-    (cljs.js/compile-str
-     compiler-state (db [:code])
-     (fn [result]
-       (db! [:compiled-code] (str (:value result)))
-       (close! c)))
+    (log 'compile (cljs.js/compile-str
+      compiler-state (db [:code])
+      (fn [result]
+        (prn result)
+        (log 'compile2 result @compiler-state)
+        (db! [:compiled-code] (str (:value result)))
+        (close! c))))
     c))
 
 (defn ping [id]
