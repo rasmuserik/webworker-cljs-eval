@@ -10,7 +10,7 @@
    [solsort.toolbox.ui :refer [input select]]
    [solsort.util
     :refer
-    [<ajax <seq<! js-seq load-style! put!close!
+    [<ajax <seq<! js-seq load-style! put!close! <p
      parse-json-or-nil log page-ready render dom->clj]]
    [reagent.core :as reagent :refer []]
    [clojure.string :as string :refer [replace split blank?]]
@@ -47,8 +47,6 @@ importScripts('http://localhost:3449/out/cljs_deps.js');
   (.terminate (get @workers id))
   (swap! workers dissoc id)
   (db! [:workers id]))
-(new-worker)
-(random-uuid)
 (when-not (db [:code])
   (db! [:code] "(ns hello
 ;(:require [cljs.reader])
@@ -56,16 +54,39 @@ importScripts('http://localhost:3449/out/cljs_deps.js');
      (js/console.log \"here\")
      (js/console.log \"here2\") "))
 
+;; apparently currently failing due to no caching, ie. sees redefinition in protocols.cljs, second time it compiles
+(set! cljs.js/*load-fn*
+      (fn [m cb]
+        (log 'load-fn m)
+        (go
+          (let [<load-ext #(<p (js/fetch (str "http://localhost:3449/out/" (:path m) %)))
+                code (<! (<load-ext ".cljs"))
+                code (if (= 200 (aget code "status"))
+                       code
+                       (<! (<load-ext ".cljc")))
+                lang (if (= 200 (aget code "status")) :clj :js)
+                code (if (= 200 (aget code "status"))
+                       code
+                       (<! (<load-ext ".js")))
+                code (<! (<p (.text code)))
+                ]
+            (log 'load-fn-result {
+                           :type lang
+                           :code code})
+           (cb {:lang lang
+                :source code
+                })))
+        ))
 (defonce compiler-state (cljs.js/empty-state))
 (defn <compile []
   (let [c (chan)]
-    (log 'compile (cljs.js/compile-str
+         (cljs.js/compile-str
       compiler-state (db [:code])
       (fn [result]
         (prn result)
-        (log 'compile2 result @compiler-state)
+        ;(log 'compile2 result @compiler-state)
         (db! [:compiled-code] (str (:value result)))
-        (close! c))))
+        (close! c)))
     c))
 
 (defn ping [id]
