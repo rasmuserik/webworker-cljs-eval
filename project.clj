@@ -5,7 +5,9 @@
   [[org.clojure/clojure "1.8.0"]
    [org.clojure/clojurescript "1.8.51"]
    [org.clojure/core.async "0.2.374"]
-   [reagent "0.6.0-rc"]
+   [com.cognitect/transit-cljs "0.8.239"]
+   #_[replumb "0.2.4"]
+   [reagent "0.6.0"]
    [binaryage/devtools "0.6.1"]]
 
   :plugins
