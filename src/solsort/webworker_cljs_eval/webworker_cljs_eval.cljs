@@ -125,6 +125,7 @@ importScripts('http://localhost:3449/out/cljs_deps.js');
                   :position :absolute
                   :width "50%"
                   :right 0}}
+    [:div "This is an experiment with clojurescript compilation and running code in webworkers."]
     [:button {:on-click <compile} "compile"]
     [:button {:on-click new-worker} "new worker"]
     [worker-list]
