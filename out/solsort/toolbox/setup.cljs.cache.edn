@@ -1,0 +1,2 @@
+;; Analyzed by ClojureScript 1.8.51
+{:name solsort.toolbox.setup, :doc nil, :excludes #{}, :use-macros nil, :require-macros nil, :uses nil, :requires {devtools devtools.core, devtools.core devtools.core}, :imports nil, :defs {dev-tools {:name solsort.toolbox.setup/dev-tools, :file "/home/rasmuserik/webworker-cljs-eval/util/src/solsort/toolbox/setup.cljs", :line 7, :column 1, :end-line 7, :end-column 19, :meta {:file "/home/rasmuserik/webworker-cljs-eval/util/src/solsort/toolbox/setup.cljs", :line 7, :column 10, :end-line 7, :end-column 19}}}}
