@@ -12,6 +12,7 @@
     :refer
     [<ajax <seq<! js-seq load-style! put!close! <p
      parse-json-or-nil log page-ready render dom->clj]]
+;   [replumb.core :as replumb]
    [reagent.core :as reagent :refer []]
    [clojure.string :as string :refer [replace split blank?]]
    [cljs.core.async :refer [>! <! chan put! take! timeout close! pipe]]))
@@ -77,6 +78,8 @@ importScripts('http://localhost:3449/out/cljs_deps.js');
                 :source code
                 })))
         ))
+
+;(replumb/read-eval-call)
 (defonce compiler-state (cljs.js/empty-state))
 (defn <compile []
   (let [c (chan)]
